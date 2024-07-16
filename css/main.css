@@ -1,0 +1,124 @@
+body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif;}
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+#title img {
+    height: 45px;
+}
+
+#panel { 
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0px;
+    width: 210px;
+    overflow: auto;
+    padding: 30px;
+    background: rgba(0, 4, 27, 0.5);
+    backdrop-filter: blur(1px);
+    color: white;
+    text-align: center;
+}
+#panel .title {
+    height: 80px;
+    padding: 30px 30px 10px;
+    margin: -30px -30px 10px;
+    background-color: rgba(0, 4, 27, 0.7);
+    text-align: left;
+}
+#panel .title img{
+    width: 200px
+}
+
+#panel .section {
+    margin-bottom: 10px;
+}
+
+#panel .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px 0px 10px;
+    border-bottom: 1px solid #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#panel .section-title button {
+    background: none;
+    /* border: 1px solid #fff; */
+    border: none;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#panel .parameter-list {
+    font-size: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+#panel .parameter-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+
+#panel .control_button {
+    width: 80px;
+    height: 30px;
+    border: none;
+    margin: 10px auto;
+    padding: 5px;
+    background-color: rgba(0, 4, 27, 0.7);
+    color: #fff;
+    text-align: center;
+    cursor: pointer;
+}
+
+.parameter_name{
+    font-size: 13px;
+}
+.unit{
+    font-size: 12px;
+}
+.hidden {
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+}
+
+#menu {
+    position: fixed;
+    bottom: 20px;
+    left: calc(50% - 20px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(180, 180, 180, 0.6);
+    padding: 5px 20px;
+    border-radius: 50px;
+}
+
+.group-selector {
+    width: 40px;
+    height: 40px;
+    margin: 5px 15px;
+    border: none;
+    background-color: rgba(0, 0, 0, 0);
+    cursor: pointer;
+    border-radius: 40px;
+}
+
+.group-selector img{
+    width: 30px;
+    height: 30px;
+}
+.group-selector.active {
+    background-color: rgba(0, 4, 27, 0.8);
+}
