@@ -1,9 +1,8 @@
-mapboxgl.accessToken = 'pk.eyJ1IjoiZW5lcmd5LXN1c3RhaW5hYmlsaXR5IiwiYSI6ImNsMW90NXdkbjA3b3MzZG1tN3c5bnByaHMifQ.qLik89SH6k3mWb2smnaKOw';
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGVyYWZpZWxkIiwiYSI6ImNseWs5MWxmcDA3dm8ya29pdjIzbzgwYTgifQ.trCDgDALlLctUawR6JigSg'
 
 var map = new mapboxgl.Map({
     container: 'map',
-    // style: 'mapbox://styles/mapbox/streets-v11',
-    style: 'mapbox://styles/mapbox/satellite-streets-v12',
+    style: 'mapbox://styles/derafield/clynz6pk402x201rb7clg7mr1',
     center: [140.11, 36.07],
     zoom: 14
 });
@@ -89,82 +88,13 @@ function updateAreas() {
     document.getElementById('eco_solar').innerText = (capacity_solar*eco_loss_solar).toFixed(0)
 }
 
-// Add Geojson layers
-// const layers = {
-//     'solar_REPOS': '../json/solar_REPOS.json',
-//     'wind_2013': '../json/wind_point_2013.geojson'
-// };
-
-// map.on('load', () => {
-//     for (const layer in layers) {
-//         map.addSource(layer, {
-//             type: 'geojson',
-//             data: layers[layer]
-//         });
-
-//         map.addLayer({
-//             id: layer,
-//             type: 'fill',
-//             source: layer,
-//             layout: { 'visibility': 'none' },
-//             paint: {
-//                 'fill-color': '#888888',
-//                 'fill-opacity': 0.5
-//             }
-//         });
-//     }
-
-//     document.getElementById('layer-select').addEventListener('change', (event) => {
-//         const selectedLayer = event.target.value;
-
-//         for (const layer in layers) {
-//             if (layer === selectedLayer) {
-//                 map.setLayoutProperty(layer, 'visibility', 'visible');
-//             } else {
-//                 map.setLayoutProperty(layer, 'visibility', 'none');
-//             }
-//         }
-//     });
-// });
-
-map.on('load', () => {
-    const layers = map.getStyle().layers;
-    // Find the index of the first symbol layer in the map style
-    let firstSymbolId;
-    for (const layer of layers) {
-    if (layer === 'symbol') {
-    firstSymbolId = layer.id;
-    break;
-    }
-    }
-     
-    map.addSource('urban-areas', {
-    'type': 'geojson',
-    'data': 'https://hiroakionodera.github.io/ReLUS/json/wind_point_2013.geojson'
-    });
-    map.addLayer(
-    {
-    'id': 'urban-areas-fill',
-    'type': 'fill',
-    'source': 'urban-areas',
-    'layout': {},
-    'paint': {
-    'fill-color': '#f08',
-    'fill-opacity': 0.4
-    }
-    // This is the important part of this example: the addLayer
-    // method takes 2 arguments: the layer as an object, and a string
-    // representing another layer's name. if the other layer
-    // exists in the stylesheet already, the new layer will be positioned
-    // right before that layer in the stack, making it possible to put
-    // 'overlays' anywhere in the layer stack.
-    // Insert the layer beneath the first symbol layer.
-    },
-    firstSymbolId
-    );
-});
 
 // Utility
+document.getElementById('style-selector').addEventListener('change', function() {
+    var style = 'mapbox://styles/' + this.value;
+    map.setStyle(style);
+});
+
 document.getElementById('reset').onclick = function() {
     draw.deleteAll();
     updateAreas();
@@ -188,13 +118,10 @@ document.getElementById('export').onclick = function() {
 };
 
 function changeColor(clickedButton) {
-    // 全てのボタンを取得
     const buttons = document.querySelectorAll('.group-selector');
-    // 各ボタンのクラスをリセット
     buttons.forEach(button => {
         button.classList.remove('active');
     });
-    // クリックされたボタンにクラスを追加
     clickedButton.classList.add('active');
 }
 
@@ -212,6 +139,47 @@ function toggleSection(sectionId) {
         button.textContent = '＋';
     }
 }
+
+
+// // Add Geojson layers
+// const layers = {
+//     'solar_REPOS': 'https://docs.mapbox.com/mapbox-gl-js/assets/ne_50m_urban_areas.geojson',
+//     'wind_2013': 'https://hiroakionodera.github.io/ReLUS/json/solar_REPOS.json'
+// };
+
+// map.on('load', () => {
+//     document.getElementById('layer-select').addEventListener('change', (event) => {
+//         const selectedLayer = event.target.value;
+
+//         for (const layer in layers) {
+//             if (map.getLayer(layer)) {
+//                 map.setLayoutProperty(layer, 'visibility', 'none');
+//             }
+//         }
+
+//         if (selectedLayer !== 'none') {
+//             if (!map.getSource(selectedLayer)) {
+//                 map.addSource(selectedLayer, {
+//                     type: 'geojson',
+//                     data: layers[selectedLayer]
+//                 });
+
+//                 map.addLayer({
+//                     id: selectedLayer,
+//                     type: 'fill',
+//                     source: selectedLayer,
+//                     layout: {},
+//                     paint: {
+//                         'fill-color': '#888888',
+//                         'fill-opacity': 0.5
+//                     }
+//                 });
+//             } else {
+//                 map.setLayoutProperty(selectedLayer, 'visibility', 'visible');
+//             }
+//         }
+//     });
+// });
 
 
 // styles: [

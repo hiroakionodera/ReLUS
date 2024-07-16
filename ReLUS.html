@@ -4,10 +4,10 @@
     <meta charset="utf-8" />
     <title>ReLUS: Renewable energy land-use simulator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.1.2/mapbox-gl-draw.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.1.2/mapbox-gl-draw.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.4.3/mapbox-gl-draw.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.4.3/mapbox-gl-draw.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
     <link href="css/main.css" rel="stylesheet" />
 </head>
@@ -82,15 +82,28 @@
             </ul>
         </div>
         
-        <button id="reset" class="control_button">Reset</button>
-        <button id="export"class="control_button">Export</button>
 
-        <div id="selector">
-            <select id="layer-select">
-                <option value="none">None</option>
-                <option value="wind_2013">Wind zooning - REPOS</option>
-                <option value="solar_REPOS">Solar zooning - REPOS</option>
-            </select>
+        <div class="section">
+            <div class="selector">
+                <p>Background layer</p>
+                <select id="style-selector">
+                    <option value="derafield/clynz6pk402x201rb7clg7mr1">Satellite</option>
+                    <option value="mapbox/streets-v11">Streets</option>
+                    <option value="derafield/clynzfyat03k101r4h67z0btv">Solar - REPOS</option>
+                    <option value="derafield/clynwboa8017s01pt7t7hf0eo">Wind - REPOS</option>
+                </select>
+                <!-- <select id="layer-select">
+                    <option value="none">None</option>
+                    <option value="wind_2013">Wind zooning - REPOS</option>
+                    <option value="solar_REPOS">Solar zooning - REPOS</option>
+                </select> -->
+            </div>
+        </div>
+
+        
+        <div class="section">
+            <button id="reset" class="control_button">Reset</button>
+            <button id="export"class="control_button">Export</button>
         </div>
     </div>
 

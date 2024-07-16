@@ -29,7 +29,7 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif;}
 }
 
 #panel .section {
-    margin-bottom: 10px;
+    margin-top: 35px;
 }
 
 #panel .section-title {
@@ -91,6 +91,39 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif;}
     padding: 0;
     margin: 0;
     opacity: 0;
+}
+
+.selector {
+    text-align: left;
+    position: relative;
+}
+.selector p{
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+}
+.selector::after {
+    position: absolute;
+    right: 15px;
+    width: 10px;
+    height: 7px;
+    background-color: #fff;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    content: '';
+    pointer-events: none;
+}
+.selector select {
+    appearance: none;
+    width: 210px;
+    border: none;
+    border-bottom: 2px solid #d0d0d0;
+    background-color: rgba(0,0,0,0);
+    color: #aaa;
+    font-size: 15px;
+    cursor: pointer;
+}
+.selector select:focus {
+    outline: none;
 }
 
 #menu {
