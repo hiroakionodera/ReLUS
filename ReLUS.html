@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ReLUS: Renewable energy land-use simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.1.2/mapbox-gl-draw.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.1.2/mapbox-gl-draw.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif;}
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #title img {
+            height: 45px;
+        }
+
+        #panel { 
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0px;
+            width: 210px;
+            overflow: auto;
+            padding: 30px;
+            background: rgba(0, 4, 27, 0.5);
+            backdrop-filter: blur(1px);
+            color: white;
+            text-align: center;
+        }
+        #panel .title {
+            height: 80px;
+            padding: 30px 30px 10px;
+            margin: -30px -30px 10px;
+            background-color: rgba(0, 4, 27, 0.7);
+            text-align: left;
+        }
+        #panel .title img{
+            width: 200px
+        }
+
+        #panel .section {
+            margin-bottom: 10px;
+        }
+
+        #panel .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 25px 0px 10px;
+            border-bottom: 1px solid #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #panel .section-title button {
+            background: none;
+            /* border: 1px solid #fff; */
+            border: none;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #panel .parameter-list {
+            font-size: 16px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        #panel .parameter-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        
+        #panel .control_button {
+            width: 80px;
+            height: 30px;
+            border: none;
+            margin: 10px auto;
+            padding: 5px;
+            background-color: rgba(0, 4, 27, 0.7);
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .parameter_name{
+            font-size: 13px;
+        }
+        .unit{
+            font-size: 12px;
+        }
+        .hidden {
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+            opacity: 0;
+        }
+
+        #menu {
+            position: fixed;
+            bottom: 20px;
+            left: calc(50% - 20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(180, 180, 180, 0.6);
+            padding: 5px 20px;
+            border-radius: 50px;
+        }
+
+        .group-selector {
+            width: 40px;
+            height: 40px;
+            margin: 5px 15px;
+            border: none;
+            background-color: rgba(0, 0, 0, 0);
+            cursor: pointer;
+            border-radius: 40px;
+        }
+        
+        .group-selector img{
+            width: 30px;
+            height: 30px;
+        }
+        .group-selector.active {
+            background-color: rgba(0, 4, 27, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="panel">
+        <div class="title"><img src="image/logo.png"></div>
+
+        <div class="section">
+            <div class="section-title" onclick="toggleSection('section_wind')">
+                <span>Onshore Wind</span>
+                <button id="toggle_wind">-</button>
+            </div>
+            <ul class="parameter-list" id="section_wind">
+                <li>
+                    <span class="parameter_name">Land requirement:</span>
+                    <span><span id="area_wind">0</span> <span class="unit">km<sup>2</sup></span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Capacity:</span>
+                    <span><span id="capacity_wind">0</span> <span class="unit">MW</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Generation:</span>
+                    <span><span id="generation_wind">0</span> <span class="unit">GWh/yr</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Investment:</span>
+                    <span><span id="invest_wind">0</span> <span class="unit">M-JPY/yr</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Ecosystem loss</span>
+                    <span><span id="eco_wind">0</span> <span class="unit">bird/yr</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Disaster risk</span>
+                    <span><span id="risk_wind">0</span> <span class="unit">M-JPY/yr</span></span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <div class="section-title" onclick="toggleSection('section_solar')">
+                <span>Solar PV</span>
+                <button id="toggle_solar">-</button>
+            </div>
+            <ul class="parameter-list" id="section_solar">
+                <li>
+                    <span class="parameter_name">Land requirement:</span>
+                    <span><span id="area_solar">0</span> <span class="unit">km<sup>2</sup></span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Capacity:</span>
+                    <span><span id="capacity_solar">0</span> <span class="unit">MW</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Generation:</span>
+                    <span><span id="generation_solar">0</span> <span class="unit">GWh/yr</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Investment:</span>
+                    <span><span id="invest_solar">0</span> <span class="unit">M-JPY/yr</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Ecosystem loss</span>
+                    <span><span id="eco_solar">0</span> <span class="unit">insect/yr</span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">Disaster risk</span>
+                    <span><span id="risk_solar">0</span> <span class="unit">M-JPY/yr</span></span>
+                </li>
+            </ul>
+        </div>
+        
+        <button id="reset" class="control_button">Reset</button>
+        <button id="export"class="control_button">Export</button>
+
+        <div id="selector">
+            <select id="layer-select">
+                <option value="none">None</option>
+                <option value="wind_2013">Wind zooning - REPOS</option>
+                <option value="solar_REPOS">Solar zooning - REPOS</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="menu">
+        <button class="group-selector active" onclick="setCurrentGroup('wind');changeColor(this)"><img src="image/onshore_wind.png"></button>
+        <button class="group-selector" onclick="setCurrentGroup('solar');changeColor(this)"><img src="image/solar.png"></button>
+        <button class="group-selector"><img src="image/river.png"></button>
+        <button class="group-selector"><img src="image/offshore_wind.png"></button>
+    </div>
+    <!-- <div id="panel">
+        <button class="group-selector active" onclick="setCurrentGroup('wind');changeColor(this)">Draw</button> -->
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZW5lcmd5LXN1c3RhaW5hYmlsaXR5IiwiYSI6ImNsMW90NXdkbjA3b3MzZG1tN3c5bnByaHMifQ.qLik89SH6k3mWb2smnaKOw';
+
+        var map = new mapboxgl.Map({
+            container: 'map',
+            // style: 'mapbox://styles/mapbox/streets-v11',
+            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            center: [140.11, 36.07],
+            zoom: 14
+        });
+
+        var draw = new MapboxDraw({
+            userProperties: true,
+            displayControlsDefault: false,
+            controls: {
+                point: true,
+                polygon: true,
+                trash: true
+            }
+        });
+
+        let currentGroup = "wind";
+        function setCurrentGroup(group) {
+            currentGroup = group;
+        }
+
+        map.addControl(draw, 'top-right');
+
+        map.on('draw.create', addGroupAttribute);
+        map.on('draw.delete', updateAreas);
+        map.on('draw.update', updateAreas);
+
+        function addGroupAttribute(e) {
+            var feature = e.features[0];
+            var featureId = e.features[0].id;
+            draw.setFeatureProperty(featureId, 'group', currentGroup);
+
+            // Wind circle
+            if (feature.geometry.type === 'Point' && currentGroup === "wind") {
+                var buffered = turf.buffer(feature, 0.25, { units: 'kilometers' });
+                draw.add(buffered);
+            }
+
+            updateAreas();
+        }
+
+        function updateAreas() {
+            var data = draw.getAll();
+            var area_wind = 0;
+            var area_solar = 0;
+            var capacity_wind = 0;
+            var capacity_solar = 0;
+
+            // Parameters
+            let area_wind_turbine = 0.2 // km2/MW
+            let cap_wind_turbine = 4 // MW
+            let cap_wind = 20 // MW/km2
+            let cap_solar = 30
+            let cf_wind = 0.3
+            let cf_solar = 0.17
+            let cost_wind = 347 // M-JPY/MW
+            let cost_solar = 208
+            let eco_loss_wind = 0.01
+            let eco_loss_solar = 0
+
+            if (data.features.length > 0) {
+                data.features.forEach(function(feature) {
+                    if (feature.properties.group === "wind" && feature.geometry.type === 'Point') {
+                        capacity_wind += cap_wind_turbine
+                        area_wind += area_wind_turbine;
+                    } else if (feature.properties.group === "wind" && feature.geometry.type === 'Polygon') {
+                        capacity_wind += turf.area(feature)/1000000*cap_wind - turf.area(feature)/1000000*cap_wind % cap_wind_turbine;
+                        area_wind += turf.area(feature) / 1000000;
+                    } else if (feature.properties.group === "solar") {
+                        capacity_solar += turf.area(feature)/1000000*cap_solar            
+                        area_solar += turf.area(feature) / 1000000;
+                    }
+                });
+            }
+
+            document.getElementById('area_wind').innerText = area_wind.toFixed(2);
+            document.getElementById('area_solar').innerText = area_solar.toFixed(2);
+            document.getElementById('capacity_wind').innerText = capacity_wind.toFixed(2);
+            document.getElementById('capacity_solar').innerText = capacity_solar.toFixed(2);
+            document.getElementById('generation_wind').innerText = (capacity_wind/1000*8760*cf_wind).toFixed(2);
+            document.getElementById('generation_solar').innerText = (capacity_solar/1000*8760*cf_solar).toFixed(2);
+            document.getElementById('invest_wind').innerText = (capacity_wind*cost_wind).toFixed(0);
+            document.getElementById('invest_solar').innerText = (capacity_solar*cost_solar).toFixed(0);
+            document.getElementById('eco_wind').innerText = (capacity_wind*eco_loss_wind).toFixed(0);
+            document.getElementById('eco_solar').innerText = (capacity_solar*eco_loss_solar).toFixed(0)
+        }
+
+        // Add Geojson layers
+        const layers = {
+            'solar_REPOS': 'json/solar_REPOS.json',
+            'wind_2013': 'json/solar_REPOS.json'
+        };
+
+        map.on('load', () => {
+            for (const layer in layers) {
+                map.addSource(layer, {
+                    type: 'geojson',
+                    data: layers[layer]
+                });
+
+                map.addLayer({
+                    id: layer,
+                    type: 'fill',
+                    source: layer,
+                    layout: { 'visibility': 'none' },
+                    paint: {
+                        'fill-color': '#888888',
+                        'fill-opacity': 0.5
+                    }
+                });
+            }
+
+            document.getElementById('layer-select').addEventListener('change', (event) => {
+                const selectedLayer = event.target.value;
+
+                for (const layer in layers) {
+                    if (layer === selectedLayer) {
+                        map.setLayoutProperty(layer, 'visibility', 'visible');
+                    } else {
+                        map.setLayoutProperty(layer, 'visibility', 'none');
+                    }
+                }
+            });
+        });
+
+        // Utility
+        document.getElementById('reset').onclick = function() {
+            draw.deleteAll();
+            updateAreas();
+        };
+
+        document.getElementById('export').onclick = function() {
+            const data = draw.getAll();
+            if (data.features.length > 0) {
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'MILUS_landuse.geojson';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else {
+                alert('No features to export');
+            }
+        };
+
+        function changeColor(clickedButton) {
+            // 全てのボタンを取得
+            const buttons = document.querySelectorAll('.group-selector');
+            // 各ボタンのクラスをリセット
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+            // クリックされたボタンにクラスを追加
+            clickedButton.classList.add('active');
+        }
+        
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const button = section.previousElementSibling.querySelector('button');
+
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                section.style.maxHeight = section.scrollHeight + "px";
+                button.textContent = '−';
+            } else {
+                section.style.maxHeight = 0;
+                section.classList.add('hidden');
+                button.textContent = '＋';
+            }
+        }
+    </script>
+</body>
+</html>
+
+<!-- 
+
+            // styles: [
+            //     {
+            //         "id": "gl-draw-polygon-fill-inactive",
+            //         "type": "fill",
+            //         "filter": ['all', ['==', 'active', 'false'],
+            //                 ['==', '$type', 'Polygon'],
+            //                 ['!=', 'mode', 'static']],
+            //         "paint": {
+            //             "fill-color": ["case",
+            //                 ['==', ['get', "group"], 1], "#00FF00", // Group 1: green
+            //                 ['==', ['get', "group"], 2], "#0000FF", // Group 2: blue
+            //                 "#FF0000" // Default: red
+            //             ],
+            //             "fill-outline-color": "#000000",
+            //             "fill-opacity": 0.5
+            //         }
+            //     },
+            //     {
+            //         "id": "gl-draw-polygon-fill-active",
+            //         "type": "fill",
+            //         "filter": ['all', ['==', 'active', 'true'],
+            //                 ['==', '$type', 'Polygon'],
+            //                 ['!=', 'mode', 'static']],
+            //         "paint": {
+            //             "fill-color": ["case",
+            //                 ["==", ["get", "group"], 1], "#00FF00", // Group 1: green
+            //                 ["==", ["get", "group"], 2], "#0000FF", // Group 2: blue
+            //                 "#FF0000" // Default: red
+            //             ],
+            //             "fill-outline-color": "#000000",
+            //             "fill-opacity": 0.2
+            //         }
+            //     },    
+            //     {
+            //         'id': 'gl-draw-polygon-midpoint',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', '$type', 'Point'],
+            //             ['==', 'meta', 'midpoint']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 3,
+            //             'circle-color': '#fbb03b'
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-polygon-stroke-inactive',
+            //         'type': 'line',
+            //         'filter': ['all', ['==', 'active', 'false'],
+            //             ['==', '$type', 'Polygon'],
+            //             ['!=', 'mode', 'static']
+            //         ],
+            //         'layout': {
+            //             'line-cap': 'round',
+            //             'line-join': 'round'
+            //         },
+            //         'paint': {
+            //             'line-color': '#000',
+            //             'line-width': 1
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-polygon-stroke-active',
+            //         'type': 'line',
+            //         'filter': ['all', ['==', 'active', 'true'],
+            //             ['==', '$type', 'Polygon']
+            //         ],
+            //         'layout': {
+            //             'line-cap': 'round',
+            //             'line-join': 'round'
+            //         },
+            //         'paint': {
+            //             'line-color': '#fbb03b',
+            //             'line-dasharray': [0.2, 2],
+            //             'line-width': 2
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-line-inactive',
+            //         'type': 'line',
+            //         'filter': ['all', ['==', 'active', 'false'],
+            //             ['==', '$type', 'LineString'],
+            //             ['!=', 'mode', 'static']
+            //         ],
+            //         'layout': {
+            //             'line-cap': 'round',
+            //             'line-join': 'round'
+            //         },
+            //         'paint': {
+            //             'line-color': '#3bb2d0',
+            //             'line-width': 2
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-line-active',
+            //         'type': 'line',
+            //         'filter': ['all', ['==', '$type', 'LineString'],
+            //             ['==', 'active', 'true']
+            //         ],
+            //         'layout': {
+            //             'line-cap': 'round',
+            //             'line-join': 'round'
+            //         },
+            //         'paint': {
+            //             'line-color': '#fbb03b',
+            //             'line-dasharray': [0.2, 2],
+            //             'line-width': 2
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-polygon-and-line-vertex-stroke-inactive',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', 'meta', 'vertex'],
+            //             ['==', '$type', 'Point'],
+            //             ['!=', 'mode', 'static']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 5,
+            //             'circle-color': '#fff'
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-polygon-and-line-vertex-inactive',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', 'meta', 'vertex'],
+            //             ['==', '$type', 'Point'],
+            //             ['!=', 'mode', 'static']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 3,
+            //             'circle-color': '#fbb03b'
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-point-point-stroke-inactive',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', 'active', 'false'],
+            //             ['==', '$type', 'Point'],
+            //             ['==', 'meta', 'feature'],
+            //             ['!=', 'mode', 'static']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 5,
+            //             'circle-opacity': 1,
+            //             'circle-color': '#fff'
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-point-inactive',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', 'active', 'false'],
+            //             ['==', '$type', 'Point'],
+            //             ['==', 'meta', 'feature'],
+            //             ['!=', 'mode', 'static']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 3,
+            //             'circle-color': '#3bb2d0'
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-point-stroke-active',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', '$type', 'Point'],
+            //             ['==', 'active', 'true'],
+            //             ['!=', 'meta', 'midpoint']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 7,
+            //             'circle-color': '#fff'
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-point-active',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', '$type', 'Point'],
+            //             ['!=', 'meta', 'midpoint'],
+            //             ['==', 'active', 'true']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 5,
+            //             'circle-color': '#fbb03b'
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-polygon-fill-static',
+            //         'type': 'fill',
+            //         'filter': ['all', ['==', 'mode', 'static'],
+            //             ['==', '$type', 'Polygon']
+            //         ],
+            //         'paint': {
+            //             'fill-color': '#404040',
+            //             'fill-outline-color': '#404040',
+            //             'fill-opacity': 0.1
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-polygon-stroke-static',
+            //         'type': 'line',
+            //         'filter': ['all', ['==', 'mode', 'static'],
+            //             ['==', '$type', 'Polygon']
+            //         ],
+            //         'layout': {
+            //             'line-cap': 'round',
+            //             'line-join': 'round'
+            //         },
+            //         'paint': {
+            //             'line-color': '#404040',
+            //             'line-width': 2
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-line-static',
+            //         'type': 'line',
+            //         'filter': ['all', ['==', 'mode', 'static'],
+            //             ['==', '$type', 'LineString']
+            //         ],
+            //         'layout': {
+            //             'line-cap': 'round',
+            //             'line-join': 'round'
+            //         },
+            //         'paint': {
+            //             'line-color': '#404040',
+            //             'line-width': 2
+            //         }
+            //     },
+            //     {
+            //         'id': 'gl-draw-point-static',
+            //         'type': 'circle',
+            //         'filter': ['all', ['==', 'mode', 'static'],
+            //             ['==', '$type', 'Point']
+            //         ],
+            //         'paint': {
+            //             'circle-radius': 5,
+            //             'circle-color': '#404040'
+            //         }
+            //     }
+            // ]
+ -->
