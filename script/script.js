@@ -1,4 +1,3 @@
-
 mapboxgl.accessToken = 'pk.eyJ1IjoiZW5lcmd5LXN1c3RhaW5hYmlsaXR5IiwiYSI6ImNsMW90NXdkbjA3b3MzZG1tN3c5bnByaHMifQ.qLik89SH6k3mWb2smnaKOw';
 
 var map = new mapboxgl.Map({
@@ -91,41 +90,78 @@ function updateAreas() {
 }
 
 // Add Geojson layers
-const layers = {
-    'solar_REPOS': '../json/solar_REPOS.json',
-    'wind_2013': '../json/wind_point_2013.geojson'
-};
+// const layers = {
+//     'solar_REPOS': '../json/solar_REPOS.json',
+//     'wind_2013': '../json/wind_point_2013.geojson'
+// };
+
+// map.on('load', () => {
+//     for (const layer in layers) {
+//         map.addSource(layer, {
+//             type: 'geojson',
+//             data: layers[layer]
+//         });
+
+//         map.addLayer({
+//             id: layer,
+//             type: 'fill',
+//             source: layer,
+//             layout: { 'visibility': 'none' },
+//             paint: {
+//                 'fill-color': '#888888',
+//                 'fill-opacity': 0.5
+//             }
+//         });
+//     }
+
+//     document.getElementById('layer-select').addEventListener('change', (event) => {
+//         const selectedLayer = event.target.value;
+
+//         for (const layer in layers) {
+//             if (layer === selectedLayer) {
+//                 map.setLayoutProperty(layer, 'visibility', 'visible');
+//             } else {
+//                 map.setLayoutProperty(layer, 'visibility', 'none');
+//             }
+//         }
+//     });
+// });
 
 map.on('load', () => {
-    for (const layer in layers) {
-        map.addSource(layer, {
-            type: 'geojson',
-            data: layers[layer]
-        });
-
-        map.addLayer({
-            id: layer,
-            type: 'fill',
-            source: layer,
-            layout: { 'visibility': 'none' },
-            paint: {
-                'fill-color': '#888888',
-                'fill-opacity': 0.5
-            }
-        });
+    const layers = map.getStyle().layers;
+    // Find the index of the first symbol layer in the map style
+    let firstSymbolId;
+    for (const layer of layers) {
+    if (layer === 'symbol') {
+    firstSymbolId = layer.id;
+    break;
     }
-
-    document.getElementById('layer-select').addEventListener('change', (event) => {
-        const selectedLayer = event.target.value;
-
-        for (const layer in layers) {
-            if (layer === selectedLayer) {
-                map.setLayoutProperty(layer, 'visibility', 'visible');
-            } else {
-                map.setLayoutProperty(layer, 'visibility', 'none');
-            }
-        }
+    }
+     
+    map.addSource('urban-areas', {
+    'type': 'geojson',
+    'data': 'json/wind_point_2013.geojson'
     });
+    map.addLayer(
+    {
+    'id': 'urban-areas-fill',
+    'type': 'fill',
+    'source': 'urban-areas',
+    'layout': {},
+    'paint': {
+    'fill-color': '#f08',
+    'fill-opacity': 0.4
+    }
+    // This is the important part of this example: the addLayer
+    // method takes 2 arguments: the layer as an object, and a string
+    // representing another layer's name. if the other layer
+    // exists in the stylesheet already, the new layer will be positioned
+    // right before that layer in the stack, making it possible to put
+    // 'overlays' anywhere in the layer stack.
+    // Insert the layer beneath the first symbol layer.
+    },
+    firstSymbolId
+    );
 });
 
 // Utility
