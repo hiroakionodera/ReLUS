@@ -140,7 +140,7 @@ map.on('load', () => {
      
     map.addSource('urban-areas', {
     'type': 'geojson',
-    'data': '../json/wind_point_2013.geojson'
+    'data': 'https://hiroakionodera.github.io/ReLUS/json/wind_point_2013.geojson'
     });
     map.addLayer(
     {
