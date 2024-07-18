@@ -4,7 +4,7 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/derafield/clynwboa8017s01pt7t7hf0eo',
     center: [140.11, 36.07],
-    zoom: 14
+    zoom: 12
 });
 
 var draw = new MapboxDraw({
