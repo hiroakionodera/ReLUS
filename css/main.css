@@ -18,8 +18,8 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif;}
     text-align: center;
 }
 #panel .title {
-    height: 80px;
-    padding: 30px 30px 10px;
+    height: 180px;
+    padding: 10px 10px 10px;
     margin: -30px -30px 10px;
     background-color: rgba(0, 4, 27, 0.7);
     text-align: left;
