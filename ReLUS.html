@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>ReLUS: Renewable energy land-use simulator</title>
-<!--     <meta name="viewport" content="width=device-width, initial-scale=1" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-draw/1.4.3/mapbox-gl-draw.js"></script>
@@ -18,32 +18,32 @@
 
         <div class="section">
             <div class="section-title" onclick="toggleSection('section_wind')">
-                <span>Onshore Wind</span>
+                <span>陸上風力発電</span>
                 <button id="toggle_wind">-</button>
             </div>
             <ul class="parameter-list" id="section_wind">
                 <li>
-                    <span class="parameter_name">Land area:</span>
+                    <span class="parameter_name">所要面積</span>
                     <span><span id="area_wind">0</span> <span class="unit">km<sup>2</sup></span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Capacity:</span>
+                    <span class="parameter_name">設備容量</span>
                     <span><span id="capacity_wind">0</span> <span class="unit">MW</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Generation:</span>
+                    <span class="parameter_name">年間発電量</span>
                     <span><span id="generation_wind">0</span> <span class="unit">GWh/yr</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Investment:</span>
+                    <span class="parameter_name">総投資額</span>
                     <span><span id="invest_wind">0</span> <span class="unit">M-JPY/yr</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Ecosystem loss</span>
+                    <span class="parameter_name">生態系サービス損失</span>
                     <span><span id="eco_wind">0</span> <span class="unit">bird/yr</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Disaster risk</span>
+                    <span class="parameter_name">防災・減災機能</span>
                     <span><span id="risk_wind">0</span> <span class="unit">M-JPY/yr</span></span>
                 </li>
             </ul>
@@ -51,46 +51,62 @@
 
         <div class="section">
             <div class="section-title" onclick="toggleSection('section_solar')">
-                <span>Solar PV</span>
+                <span>太陽光発電</span>
                 <button id="toggle_solar">-</button>
             </div>
             <ul class="parameter-list" id="section_solar">
                 <li>
-                    <span class="parameter_name">Land area:</span>
+                    <span class="parameter_name">所要面積</span>
                     <span><span id="area_solar">0</span> <span class="unit">km<sup>2</sup></span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Capacity:</span>
+                    <span class="parameter_name">設備容量</span>
                     <span><span id="capacity_solar">0</span> <span class="unit">MW</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Generation:</span>
+                    <span class="parameter_name">年間発電量</span>
                     <span><span id="generation_solar">0</span> <span class="unit">GWh/yr</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Investment:</span>
+                    <span class="parameter_name">総投資額</span>
                     <span><span id="invest_solar">0</span> <span class="unit">M-JPY/yr</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Ecosystem loss</span>
+                    <span class="parameter_name">生態系サービス損失</span>
                     <span><span id="eco_solar">0</span> <span class="unit">insect/yr</span></span>
                 </li>
                 <li>
-                    <span class="parameter_name">Disaster risk</span>
+                    <span class="parameter_name">防災・減災機能</span>
                     <span><span id="risk_solar">0</span> <span class="unit">M-JPY/yr</span></span>
                 </li>
             </ul>
         </div>
         
+        <div class="section">
+            <div class="section-title" onclick="toggleSection('section_forest')">
+                <span>森林</span>
+                <button id="toggle_forest">-</button>
+            </div>
+            <ul class="parameter-list" id="section_forest">
+                <li>
+                    <span class="parameter_name">森林面積</span>
+                    <span><span id="area_forest">0</span> <span class="unit">km<sup>2</sup></span></span>
+                </li>
+                <li>
+                    <span class="parameter_name">年間CO<sub>2</sub>吸収量</span>
+                    <span><span id="co2_forest">0</span> <span class="unit">t</span></span>
+                </li>
+            </ul>
+        </div>
 
         <div class="section">
             <div class="selector">
-                <p>Background layer</p>
+                <p>背景地図</p>
                 <select id="style-selector">
-                    <option value="derafield/clynwboa8017s01pt7t7hf0eo">Wind - REPOS</option>
-                    <option value="derafield/clynzfyat03k101r4h67z0btv">Solar - REPOS</option>
-                    <option value="derafield/clynz6pk402x201rb7clg7mr1">Satellite</option>
-                    <option value="mapbox/streets-v11">Streets</option>
+                    <option value="derafield/clynwboa8017s01pt7t7hf0eo">平均風速 - REPOS</option>
+                    <option value="derafield/clynzfyat03k101r4h67z0btv">日射量 - REPOS</option>
+                    <option value="derafield/clynz6pk402x201rb7clg7mr1">衛星画像</option>
+                    <option value="mapbox/streets-v11">ストリートマップ</option>
                 </select>
                 <!-- <select id="layer-select">
                     <option value="none">None</option>
@@ -109,9 +125,10 @@
 
     <div id="menu">
         <button class="group-selector active" onclick="setCurrentGroup('wind');changeColor(this)"><img src="image/onshore_wind.png"></button>
-        <button class="group-selector" onclick="setCurrentGroup('solar');changeColor(this)"><img src="image/solar.png"></button>
+        <button class="group-selector" onclick="setCurrentGroup('solar');changeColor(this)" title="Polygon tool (p)"><img src="image/solar.png"></button>
         <button class="group-selector"><img src="image/river.png"></button>
         <button class="group-selector"><img src="image/offshore_wind.png"></button>
+        <button class="group-selector" onclick="setCurrentGroup('forest');changeColor(this)"><img src="image/forest.png"></button>
     </div>
     <!-- <div id="panel">
         <button class="group-selector active" onclick="setCurrentGroup('wind');changeColor(this)">Draw</button> -->

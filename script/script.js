@@ -3,8 +3,8 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiZGVyYWZpZWxkIiwiYSI6ImNseWs5MWxmcDA3dm8ya29pd
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/derafield/clynwboa8017s01pt7t7hf0eo',
-    center: [140.11, 36.15],
-    zoom: 12
+    center: [140.11, 36.07],
+    zoom: 14
 });
 
 var draw = new MapboxDraw({
@@ -14,7 +14,7 @@ var draw = new MapboxDraw({
         point: true,
         polygon: true,
         trash: true
-    }
+    },
 });
 
 let currentGroup = "wind";
@@ -31,10 +31,24 @@ map.on('draw.update', updateAreas);
 function addGroupAttribute(e) {
     var feature = e.features[0];
     var featureId = e.features[0].id;
-    draw.setFeatureProperty(featureId, 'group', currentGroup);
+    draw.setFeatureProperty(featureId, 'group', currentGroup); //面積等の計算に使う
+    feature.properties.group = currentGroup; //displayFeatureGroupで使う
+    
+    if (feature.geometry.type === 'Polygon') {
+        displayFeatureGroup(feature);
+    }
 
     // Wind circle
     if (feature.geometry.type === 'Point' && currentGroup === "wind") {
+        // Add turbine icon class
+        const coordinates = [feature.geometry.coordinates[0],feature.geometry.coordinates[1]];
+        const el = document.createElement('div');
+        console.log(coordinates)
+        el.className = 'icon_wind';
+        new mapboxgl.Marker(el)
+            .setLngLat(coordinates)
+            .addTo(map);
+        // Add buffer circle polygon
         var buffered = turf.buffer(feature, 0.25, { units: 'kilometers' });
         draw.add(buffered);
     }
@@ -42,15 +56,34 @@ function addGroupAttribute(e) {
     updateAreas();
 }
 
+function displayFeatureGroup(feature) {
+    const coordinates = feature.geometry.coordinates[0][0];
+    console.log(coordinates)
+    const el = document.createElement('div');
+    if (feature.properties.group === 'wind'){
+        el.className = 'marker_wind';
+    } else if (feature.properties.group === 'solar'){
+        el.className = 'marker_solar';
+    } else if (feature.properties.group === 'forest'){
+        el.className = 'marker_forest';
+    }
+    el.innerText = feature.properties.group;
+    new mapboxgl.Marker(el)
+        .setLngLat(coordinates)
+        .addTo(map);
+}
+
 function updateAreas() {
     var data = draw.getAll();
     var area_wind = 0;
     var area_solar = 0;
+    var area_forest = 0;
     var capacity_wind = 0;
     var capacity_solar = 0;
+    var co2_forest = 0;
 
     // Parameters
-    let area_wind_turbine = 0.2 // km2/MW
+    let area_wind_turbine = 0.2 // km2/turbine
     let cap_wind_turbine = 4 // MW
     let cap_wind = 20 // MW/km2
     let cap_solar = 30
@@ -60,22 +93,29 @@ function updateAreas() {
     let cost_solar = 208
     let eco_loss_wind = 0.01
     let eco_loss_solar = 0
+    let co2_km2 = 1500
 
     if (data.features.length > 0) {
         data.features.forEach(function(feature) {
             if (feature.properties.group === "wind" && feature.geometry.type === 'Point') {
-                capacity_wind += cap_wind_turbine
+                capacity_wind += cap_wind_turbine;
                 area_wind += area_wind_turbine;
             } else if (feature.properties.group === "wind" && feature.geometry.type === 'Polygon') {
                 capacity_wind += turf.area(feature)/1000000*cap_wind - turf.area(feature)/1000000*cap_wind % cap_wind_turbine;
                 area_wind += turf.area(feature) / 1000000;
+                area_forest -= turf.area(feature) / 1000000;
+                co2_forest -= turf.area(feature) / 1000000 *co2_km2;
             } else if (feature.properties.group === "solar") {
-                capacity_solar += turf.area(feature)/1000000*cap_solar            
+                capacity_solar += turf.area(feature)/1000000*cap_solar;
                 area_solar += turf.area(feature) / 1000000;
+            } else if (feature.properties.group === "forest") {
+                co2_forest += turf.area(feature)/1000000*co2_km2;
+                area_forest += turf.area(feature) / 1000000;
             }
         });
     }
 
+    // Wind, Solar
     document.getElementById('area_wind').innerText = area_wind.toFixed(2);
     document.getElementById('area_solar').innerText = area_solar.toFixed(2);
     document.getElementById('capacity_wind').innerText = capacity_wind.toFixed(2);
@@ -86,6 +126,11 @@ function updateAreas() {
     document.getElementById('invest_solar').innerText = (capacity_solar*cost_solar).toFixed(0);
     document.getElementById('eco_wind').innerText = (capacity_wind*eco_loss_wind).toFixed(0);
     document.getElementById('eco_solar').innerText = (capacity_solar*eco_loss_solar).toFixed(0)
+    // Forest
+    area_forest = area_forest.toFixed(2)
+    co2_forest = co2_forest.toFixed(0)
+    document.getElementById('area_forest').innerText = (area_forest > 0 ? `+${area_forest}` : area_forest);
+    document.getElementById('co2_forest').innerText = (co2_forest > 0 ? `+${co2_forest}` : co2_forest)
 }
 
 
