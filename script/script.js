@@ -4,7 +4,9 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/derafield/clynwboa8017s01pt7t7hf0eo',
     center: [140.11, 36.07],
-    zoom: 14
+    zoom: 14,
+    pitch: 80,
+    bearing: 41,
 });
 
 var draw = new MapboxDraw({
@@ -27,6 +29,15 @@ map.addControl(draw, 'top-right');
 map.on('draw.create', addGroupAttribute);
 map.on('draw.delete', updateAreas);
 map.on('draw.update', updateAreas);
+map.on('style.load', () => {
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512,
+        'maxzoom': 14
+    });
+    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+});
 
 function addGroupAttribute(e) {
     var feature = e.features[0];
